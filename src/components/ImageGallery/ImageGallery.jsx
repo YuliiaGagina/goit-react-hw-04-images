@@ -7,7 +7,10 @@ const ImageGallery = ({photos, onClick, }) => {
    
     return (
     <ul className={css.ImageGallery}>
-        <ImageGalleryItem photos={photos} onClick={onClick} />
+        {photos.map(photos => (
+             <ImageGalleryItem key={photos.id} photos={photos} onClick={onClick} />
+          ))}
+       
     </ul>
     )
 }
