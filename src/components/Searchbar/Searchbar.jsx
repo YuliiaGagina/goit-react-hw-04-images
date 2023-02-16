@@ -1,23 +1,27 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import css from './Searchbar.module.css';
-export class Searchbar extends Component {
-  state = {
-    query: '',
-  };
 
-  hendleInput = ({ target }) => {
-    this.setState({ [target.name]: target.value });
-  };
 
-  hendleSubmit = event => {
+export function Searchbar({onSubmit}){
+  const [query, setQuery] = useState('');
+ 
+
+ const hendleInput = ({ target }) => {
+  setQuery(target.value);
+};
+   
+  
+
+ const hendleSubmit = event => {
     event.preventDefault();
-    this.props.onSubmit(this.state.query);
-    this.setState({ query: '' });
+    onSubmit(query);
+    setQuery('');
+    
   };
-  render() {
+  
     return (
       <header className={css.Searchbar}>
-  <form onSubmit={this.hendleSubmit} className={css.Form}>
+  <form onSubmit={hendleSubmit} className={css.Form}>
     <button type="submit" className={css.Button}>
       <span className={css['Button-label']}>Search</span>
     </button>
@@ -29,20 +33,12 @@ export class Searchbar extends Component {
       autoFocus
       placeholder="Search images and photos"
       name="query"
-      value={this.state.query}
-      onChange={this.hendleInput}
+      value={query}
+      onChange={hendleInput}
     />
   </form>
 </header>
-      // <form onSubmit={this.hendleSubmit}>
-      //   <input
-      //     type="text"
-      //     name="query"
-      //     value={this.state.query}
-      //     onChange={this.hendleInput}
-      //   />
-      //   <button type="submit">Search</button>
-      // </form>
+     
     );
-  }
 }
+

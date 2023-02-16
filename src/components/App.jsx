@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { requestPhotos } from 'services/api';
 import ImageGallery from './ImageGallery/ImageGallery';
 import { Loader } from 'components/Loader/Loader';
@@ -8,82 +8,72 @@ import Modal from './Modal/Modal';
 
 import Button from './Button/Button';
 
-export class App extends Component {
-  state = {
-    photos: [],
-    isLoading: false,
-    error: '',
-    page: 1,
-    showLoadMore: false,
-    query: '',
-    selectedPostId: null,
-    showModal: false,
-    largeImageURL: '',
-    pressedKey: null,
-  };
- 
-  async componentDidUpdate(_, prevState) {
+export function App( ) {
+  const [photos, setPhotos] = useState([]);
+  const [isLoading, setIsloading] = useState(false);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1)
+  const [showLoadMore, setShowLoadMore] = useState(false);
+  const [query, setQuery] = useState('');
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [isEmpty, setIsEmpty] = useState(false);
+
   
-    const { query, page } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
-      this.setState({ isLoading: true });
-    try {
-      const { totalHits, hits } = await requestPhotos(query, page);
-      this.setState(prevState => ({
-        photos: [...prevState.photos, ...hits],
-        showLoadMore: page < Math.ceil(totalHits / 12),
-       
-      }));
-    } catch (error) {
-    } finally {
-      this.setState({ isLoading: false });
-      
+  useEffect(() => {
+    if(!query){
+      return;
     }
-  }
-  }
+    const seachPhotos = async ( ) =>{
+      setIsloading(true);
+      try{
+        const { totalHits, hits } = await requestPhotos(query, page);
+        if (hits.length === 0) {
+          setIsEmpty(true);
+          return;
+        }
 
-  onSubmit = query => {
-    this.setState({
-      query,
-      photos: [],
-      isLoading: false,
-      error: '',
-      page: 1,
-      showLoadMore: false,
-    });
-  };
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-  // handleSelectPhoto = photoId => {
-  //   this.setState((prevState) => ({
-  //     selectedPostId: photoId,
-  //   }));
-   
-  // };
-  toogleModal = (largeImageURL) => {
+        setPhotos(prevState => [...prevState, ...hits]);
+        setShowLoadMore(page < Math.ceil(totalHits / 12))
+      } catch(error){
+        setError(error.message)
+
+      }finally{
+        setIsloading(false);
+      }
+    }
+    seachPhotos();
+  }, [query, page], );
+ 
+  
+
+  const onSubmit = query => {
+    setQuery(query);
+    setPhotos([]);
+    setIsloading(false);
+    setError('');
+    setPage(1);
+    setShowLoadMore(false);
+    setIsEmpty(false);
     
-    this.setState(state =>({
-     largeImageURL
-    }))
+  };
+ const handleLoadMore = () => {
+    setPage(prevState => prevState + 1 );
+  };
+
+ const toogleModal = (largeImageURL) => {
+    setLargeImageURL(largeImageURL);
   }
  
- 
- 
-
-  render() {
-
-   
-    const { photos, showLoadMore, isLoading, largeImageURL } = this.state;
-  return (
+ return (
       <div className={css.app}>
         {isLoading && <Loader />}
-        <Searchbar onSubmit={this.onSubmit} />
-        <ImageGallery photos={photos} onClick={this.toogleModal}  />
-        {showLoadMore && <Button showMore={this.handleLoadMore} />  } 
+        <Searchbar onSubmit={onSubmit} />
+        {isEmpty ? (<p>Фотографій на цей запит немає {error}</p>): <ImageGallery photos={photos} onClick={toogleModal}  />}
         
-       {largeImageURL && <Modal photos={largeImageURL} onClose={this.toogleModal} />}
+        {showLoadMore && <Button showMore={handleLoadMore} />  } 
+        
+       {largeImageURL && <Modal photos={largeImageURL} onClose={toogleModal} />}
       </div>
     );
   }
-}
+
