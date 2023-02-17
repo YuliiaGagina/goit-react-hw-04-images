@@ -1,20 +1,24 @@
+import { useEffect } from 'react';
 import css from './Modal.module.css';
-import { useState } from 'react';
+
 
 function Modal({ photos, onClose }) {
-  useState(() => {
+
+    useEffect(() => {
+    const handleEscapeDown = e => {
+      if (e.code === 'Escape') {
+        onClose();
+      }
+    };
     window.addEventListener('keydown', handleEscapeDown);
 
-    window.removeEventListener('keydown', handleEscapeDown);
-  }, [photos]);
-
-  const handleEscapeDown = e => {
-    if (e.code === 'Escape') {
-      onClose();
+    return () =>{
+      window.removeEventListener('keydown', handleEscapeDown);
     }
-  };
+  });
 
-  const handleBackdropClick = e => {
+
+const handleBackdropClick = e => {
     if (e.currentTarget === e.target) {
       onClose();
     }
